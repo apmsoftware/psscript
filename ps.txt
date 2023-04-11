@@ -1,0 +1,15 @@
+# Set variables for the VHD location, size and drive letter
+$VhdPath = "D:\NewVHD.vhdx"
+$VhdSize = 20GB
+$DriveLetter = "Z"
+
+# Create a new VHD
+New-VHD -Path $VhdPath -SizeBytes $VhdSize -Dynamic
+
+# Attach the VHD and assign drive letter
+Add-VMHardDiskDrive -Path $VhdPath -ControllerType SCSI -ControllerNumber 0 -LUN 0 -VMName "MyVM"
+Get-Disk | Where-Object PartitionStyle -eq 'RAW' | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel "NewVHD" -Confirm:$false
+
+# Create the two folders on the new VHD
+New-Item -ItemType Directory -Path "$DriveLetter:\nuget-cache"
+New-Item -ItemType Directory -Path "$DriveLetter:\InternalUIClient"
